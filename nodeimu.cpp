@@ -12,10 +12,10 @@ NodeIMU::NodeIMU() {
     if ((imu == NULL) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
         printf("No IMU found\n");
         exit(1);
-    }	
-	
+    }
+
     imu->IMUInit();
-	if (pressure != NULL) { pressure->pressureInit(); }	
+	if (pressure != NULL) { pressure->pressureInit(); }
 	if (humidity != NULL) { humidity->humidityInit(); }
 
     imu->setSlerpPower((float)0.02);
@@ -37,7 +37,7 @@ NAN_METHOD(NodeIMU::New) {
 	info.GetReturnValue().Set(info.This());
 }
 
-void AddRTVector3ToResult(v8::Handle<v8::Object>& result, RTVector3 data, const char* name) {
+void AddRTVector3ToResult(v8::Local<v8::Object>& result, RTVector3 data, const char* name) {
 	Nan::HandleScope();
 
 	v8::Local<v8::Object> field = Nan::New<v8::Object>();
@@ -48,16 +48,16 @@ void AddRTVector3ToResult(v8::Handle<v8::Object>& result, RTVector3 data, const 
 	Nan::Set(result, Nan::New(name).ToLocalChecked(), field);
 }
 
-void PutMeasurement(const RTIMU_DATA& imuData, const bool pressure, const bool humidity, v8::Handle<v8::Object>& result) {
+void PutMeasurement(const RTIMU_DATA& imuData, const bool pressure, const bool humidity, v8::Local<v8::Object>& result) {
 	Nan::HandleScope();
-	
+
 	Nan::Set(result, Nan::New("timestamp").ToLocalChecked(), Nan::New<v8::Date>(0.001 * (double)imuData.timestamp).ToLocalChecked());
 
 	AddRTVector3ToResult(result, imuData.accel, "accel");
 	AddRTVector3ToResult(result, imuData.gyro, "gyro");
 	AddRTVector3ToResult(result, imuData.compass, "compass");
 	AddRTVector3ToResult(result, imuData.fusionPose, "fusionPose");
-	
+
 	Nan::Set(result, Nan::New("tiltHeading").ToLocalChecked(), Nan::New(RTMath::poseFromAccelMag(imuData.accel, imuData.compass).z()));
 
 	if (pressure) {
